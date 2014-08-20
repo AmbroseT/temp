@@ -1,12 +1,5 @@
 base
-datasets
 ggplot2
-graphics
-grDevices
-grid
 gridExtra
 knitr
-methods
-stats
-utils
 xtable

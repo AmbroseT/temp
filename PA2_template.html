@@ -183,9 +183,14 @@ hljs.initHighlightingOnLoad();
 
 <hr/>
 
-<h2>Synopsis</h2>
+<h2>Section I: Synopsis</h2>
 
-<h2>Data Processing</h2>
+<h2>Section II: Data Processing</h2>
+
+<p>The basic goal of this assignment is to explore the NOAA Storm Database and answer some 
+basic questions about severe weather events. You must use the database to answer the 
+questions below and show the code for your entire analysis. Your analysis can consist of 
+tables, figures, or other summaries. You may use any R package you want to support your analysis.</p>
 
 <h3>Libraries</h3>
 
@@ -201,8 +206,9 @@ library(xtable)
 
 <h3>Downloading and Reading the Data</h3>
 
-<pre><code class="r">## Preparing the directory locations
-## check if destination directories to be used already exist
+<pre><code class="r">## Preparing the directory locations:
+## check if destination directories to be used already exist, relative to
+## the working directory
 
 if(!file.exists(&quot;data&quot;)) {dir.create(&quot;data&quot;)}
 if(!file.exists(&quot;./data/temp/repdata2&quot;)) {dir.create(&quot;./data/temp/repdata2&quot;)}
@@ -213,7 +219,7 @@ filename &lt;- &quot;StormData.csv&quot;
 ## Check to see if the file already exists locally
 if(!file.exists(&quot;StormData.csv&quot;)) {
 
-    ## file does not exist locally
+    ## file does not exist locally:
     ## note that BZ2 files are just text files that R recognizes, so there is no need 
     ## for extraction. Download file renamed to StormData.csv, write to a text file
     ## today&#39;s date of download. If the CSV file does not exist, but the downloaded.txt 
@@ -227,7 +233,7 @@ if(!file.exists(&quot;StormData.csv&quot;)) {
 
 } else {
 
-    ## file exists locally
+    ## file exists locally:
     ## Save variable as local copy if file already exists.
 
     datedownloaded &lt;- paste(readLines(&quot;datedownloaded.txt&quot;),
@@ -235,10 +241,32 @@ if(!file.exists(&quot;StormData.csv&quot;)) {
 } 
 </code></pre>
 
-<p>Now that we have downloaded the raw data set, we can store it into a variable named <code>weatherDdata</code> and get the summary of the loaded data set:</p>
+<p>Now that we have downloaded the raw data set, we can store it into a variable named <code>weatherDdata</code>:</p>
 
 <pre><code class="r">weatherData &lt;- read.csv(filename, sep=&quot;,&quot;)
-summary(weatherData)
+</code></pre>
+
+<p>Using inline R code, the following HTML table just states and records the <code>filename</code> and <code>datedownloaded</code>, from the above code chunk:</p>
+
+<table><thead>
+<tr>
+<th align="right"></th>
+<th align="right">File Used</th>
+<th align="right">Downloaded</th>
+</tr>
+</thead><tbody>
+<tr>
+<td align="right"><strong>Record</strong></td>
+<td align="right">StormData.csv</td>
+<td align="right">Tue Aug 19 13:30:57 2014, localCopy</td>
+</tr>
+</tbody></table>
+
+<p>Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated date set, then the date of the new data set can be compared against the <code>datedownloaded</code> of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.</p>
+
+<p>Next we will use the <code>weatherData</code> data set to run some analysis. First, let&#39;s check the summary of the data set:</p>
+
+<pre><code class="r">summary(weatherData)
 </code></pre>
 
 <pre><code>##     STATE__                  BGN_DATE             BGN_TIME     
@@ -339,30 +367,9 @@ summary(weatherData)
 ##  (Other)                                       :588295
 </code></pre>
 
-<p>The following HTML table just states the inline code for <code>filename</code> and <code>datedownloaded</code> in the above code:</p>
+<p>We can take the above summary of the variables in the data set and cross reference the information about the data set in the National Weather Service PDF file <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">here</a>.</p>
 
-<table><thead>
-<tr>
-<th align="right"></th>
-<th align="right">File Used</th>
-<th align="right">Downloaded</th>
-</tr>
-</thead><tbody>
-<tr>
-<td align="right"><strong>Record</strong></td>
-<td align="right">StormData.csv</td>
-<td align="right">Tue Aug 19 13:30:57 2014, localCopy</td>
-</tr>
-</tbody></table>
-
-<p>Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated date set, then the date of the new data set can be compared against the <code>datedownloaded</code> of this analysis.  Adjustments can then be madde to the analysis code to reflect the change, or margins of error can be calculated based on the differences.</p>
-
-<p>The basic goal of this assignment is to explore the NOAA Storm Database and answer some 
-basic questions about severe weather events. You must use the database to answer the 
-questions below and show the code for your entire analysis. Your analysis can consist of 
-tables, figures, or other summaries. You may use any R package you want to support your analysis.</p>
-
-<h2>Results</h2>
+<h2>Section III: Results</h2>
 
 <h3>Answering the Questions</h3>
 
@@ -377,6 +384,8 @@ are most harmful with respect to population health?</p>
 
 <p>&ndash; variables related to economy: propdmg, propdmgexp, cropdmg, cropdmgexp</p></li>
 </ul>
+
+<h3>Conclusion</h3>
 
 <p>Consider writing your report as if it were to be read by a government or municipal manager 
  who might be responsible for preparing for severe weather events and will need to prioritize 

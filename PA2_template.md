@@ -3,11 +3,16 @@
 ## WEATHER SYSTEMS AND THEIR IMPACT ACROSS THE U.S.
 ***
 
-## Synopsis
+## Section I: Synopsis
 
 
 
-## Data Processing
+## Section II: Data Processing
+
+The basic goal of this assignment is to explore the NOAA Storm Database and answer some 
+basic questions about severe weather events. You must use the database to answer the 
+questions below and show the code for your entire analysis. Your analysis can consist of 
+tables, figures, or other summaries. You may use any R package you want to support your analysis.
 
 ### Libraries
 
@@ -27,8 +32,9 @@ All plots created in this assignment are **ggplot2** plots, consisting of histog
 
 
 ```r
-## Preparing the directory locations
-## check if destination directories to be used already exist
+## Preparing the directory locations:
+## check if destination directories to be used already exist, relative to
+## the working directory
 
 if(!file.exists("data")) {dir.create("data")}
 if(!file.exists("./data/temp/repdata2")) {dir.create("./data/temp/repdata2")}
@@ -39,7 +45,7 @@ filename <- "StormData.csv"
 ## Check to see if the file already exists locally
 if(!file.exists("StormData.csv")) {
     
-    ## file does not exist locally
+    ## file does not exist locally:
     ## note that BZ2 files are just text files that R recognizes, so there is no need 
     ## for extraction. Download file renamed to StormData.csv, write to a text file
     ## today's date of download. If the CSV file does not exist, but the downloaded.txt 
@@ -53,7 +59,7 @@ if(!file.exists("StormData.csv")) {
 
 } else {
     
-    ## file exists locally
+    ## file exists locally:
     ## Save variable as local copy if file already exists.
     
     datedownloaded <- paste(readLines("datedownloaded.txt"),
@@ -61,11 +67,25 @@ if(!file.exists("StormData.csv")) {
 } 
 ```
 
-Now that we have downloaded the raw data set, we can store it into a variable named ```weatherDdata``` and get the summary of the loaded data set:
+Now that we have downloaded the raw data set, we can store it into a variable named ```weatherDdata``:
 
 
 ```r
 weatherData <- read.csv(filename, sep=",")
+```
+
+Using inline R code, the following HTML table just states and records the ```filename``` and ```datedownloaded```, from the above code chunk:
+
+|            | File Used      | Downloaded          |
+| ----------:| --------------:| -------------------:|
+| **Record** | StormData.csv   | Tue Aug 19 13:30:57 2014, localCopy  |
+
+Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated date set, then the date of the new data set can be compared against the ```datedownloaded``` of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.
+
+Next we will use the ```weatherData``` data set to run some analysis. First, let's check the summary of the data set:
+
+
+```r
 summary(weatherData)
 ```
 
@@ -168,20 +188,10 @@ summary(weatherData)
 ##  (Other)                                       :588295
 ```
 
-The following HTML table just states the inline code for ```filename``` and ```datedownloaded``` in the above code:
+We can take the above summary of the variables in the data set and cross reference the information about the data set in the National Weather Service PDF file [here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf).
 
-|            | File Used      | Downloaded          |
-| ----------:| --------------:| -------------------:|
-| **Record** | StormData.csv   | Tue Aug 19 13:30:57 2014, localCopy  |
 
-Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated date set, then the date of the new data set can be compared against the ```datedownloaded``` of this analysis.  Adjustments can then be madde to the analysis code to reflect the change, or margins of error can be calculated based on the differences.
-
-The basic goal of this assignment is to explore the NOAA Storm Database and answer some 
-basic questions about severe weather events. You must use the database to answer the 
-questions below and show the code for your entire analysis. Your analysis can consist of 
-tables, figures, or other summaries. You may use any R package you want to support your analysis.
-
-## Results
+## Section III: Results
 
 ### Answering the Questions
 
@@ -201,6 +211,7 @@ Your data analysis must address the following questions:
   
  -- variables related to economy: propdmg, propdmgexp, cropdmg, cropdmgexp
   
+### Conclusion  
   
 Consider writing your report as if it were to be read by a government or municipal manager 
  who might be responsible for preparing for severe weather events and will need to prioritize 
