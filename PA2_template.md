@@ -37,29 +37,34 @@ All plots created in this assignment are **ggplot2** plots, consisting of histog
 ## ----------------------
 ## downloading code chunk
 ## ----------------------
+## set the data directory for the analysis. As a single point of reference, 
+## changes can be made here if required.
+dataDir <- "./data/temp/repdata2/"
+
+## set the name of the file to be used after download. As a single point of reference, 
+## changes can be made here if required.
+filename <- "StormData.csv"
+
 ## Preparing the directory locations:
 ## check if destination directories to be used already exist, relative to
 ## the working directory
 
 if(!file.exists("data")) {dir.create("data")}
-if(!file.exists("./data/temp/repdata2")) {dir.create("./data/temp/repdata2")}
-
-## set the name of the file to be used after download
-filename <- "StormData.csv"
+if(!file.exists(dataDir)) {dir.create(dataDir)}
 
 ## Check to see if the file already exists locally
-if(!file.exists("StormData.csv")) {
+if(!file.exists(paste(dataDir, filename, sep=""))) {
     
     ## file does not exist locally:
-    ## note that BZ2 files are just text files that R recognizes, so there is no need 
+    ## note that BZ2 files are text files that R recognizes, so there is no need 
     ## for extraction. Download file renamed to StormData.csv, write to a text file
     ## today's date of download. If the CSV file does not exist, but the downloaded.txt 
     ## file already exists, the text file will be over written with a new file.
     
     fileUrl <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
-    download.file(fileUrl, destfile=filename)
-    writeLines(Date(),"datedownloaded.txt")
-    datedownloaded <- paste(readLines("datedownloaded.txt"),
+    download.file(fileUrl, destfile=paste(dataDir, filename, sep=""))
+    writeLines(date(),paste(dataDir, "datedownloaded.txt", sep =""))
+    datedownloaded <- paste(readLines(paste(dataDir, "datedownloaded.txt", sep ="")),
                             ", downloaded today", sep="")
 
 } else {
@@ -67,12 +72,12 @@ if(!file.exists("StormData.csv")) {
     ## file exists locally:
     ## Save variable as local copy if file already exists.
     
-    datedownloaded <- paste(readLines("datedownloaded.txt"),
+    datedownloaded <- paste(readLines(paste(dataDir, "datedownloaded.txt", sep ="")),
                             ", localCopy", sep="")
-} 
+}
 ```
 
-Now that we have downloaded the raw data set, we can store it into a variable named ```weatherDdata``:
+Now that we have downloaded the raw data set, we can store it into a variable named ```weatherData```:
 
 
 ```r
@@ -82,13 +87,13 @@ Now that we have downloaded the raw data set, we can store it into a variable na
 weatherData <- read.csv(filename, sep=",")
 ```
 
-Using inline R code, the following HTML table just states and records the ```filename``` and ```datedownloaded```, from the downloading code chunk above:
+Using inline R code, the following HTML table just states and records the ```filename``` and ```datedownloaded``` from the downloading code chunk above:
 
-|            | File Used      | Downloaded          |
-| ----------:| --------------:| -------------------:|
-| **Record** | StormData.csv   | Tue Aug 19 13:30:57 2014, localCopy  |
+|            | File Used      | Downloaded                         |
+| ----------:| --------------:| ----------------------------------:|
+| **Record** | StormData.csv   | Wed Aug 20 14:19:13 2014, localCopy                 |
 
-Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated data set, then the date of the new data set can be compared against the ```datedownloaded``` of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.
+Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated data set at the source site, then the date of the new data set can be compared against the ```datedownloaded``` of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.
 
 Next we will use the ```weatherData``` data set to run some analysis. First, let's check the summary of the data set:
 
@@ -196,7 +201,7 @@ summary(weatherData)
 ##  (Other)                                       :588295
 ```
 
-We can take the above summary of the variables in the data set and cross reference the information about the variables in the National Weather Service PDF file [here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf).
+We can take the varaibles from the above summary of the data set and cross reference the information about the variables in the National Weather Service PDF file [here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf). Peruse the PDF file to understand the variables listed in the raw data set.
 
 Now that we understand the meaning behind the variables in the data set, we will move forward to answer some questions.
 
@@ -204,52 +209,41 @@ Now that we understand the meaning behind the variables in the data set, we will
   
 #### Q1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
   
-We will subset from ```weatherData``` only the variables that apply to this question.  From the summary of ```weatherData``` that we saw previously, the relevant variables that we will choose are:
+For this analysis, we will define "harm" as a combination of "fatalities" and "injuries" from the data set. Therefore, we will subset from ```weatherData``` only the variables that apply to this question.  From the summary of ```weatherData``` that we saw previously, the relevant variables that we will choose are:
 * EVTYPE
 * FATALITIES
 * INJURIES
 
+We can subset ```weatherData``` with the variables listed above, aggregate the event types and calculate the sum of the total harm done by each type, and then order the event type by the most damage done:
+
 
 ```r
-## population health
+## subset the event types and the harm they do, as popHarm
 popHarm <- weatherData[, c("EVTYPE", "FATALITIES", "INJURIES")]
-```
 
-
-```r
+## calculate the sum of both fatalities and injuries for each event observation, as sunHarm
 sumHarm <- popHarm$FATALITIES + popHarm$INJURIES
 sumHarm <- cbind(popHarm, sumHarm)
-head(sumHarm)
-```
 
-```
-##    EVTYPE FATALITIES INJURIES sumHarm
-## 1 TORNADO          0       15      15
-## 2 TORNADO          0        0       0
-## 3 TORNADO          0        2       2
-## 4 TORNADO          0        2       2
-## 5 TORNADO          0        2       2
-## 6 TORNADO          0        6       6
-```
-
-
-```r
-## aggregate population health by sum
+## aggregate population health by sum into a new data set, aggregateHarm
 aggregateHarm <- aggregate(. ~ EVTYPE, data = sumHarm, FUN = sum)
-head(aggregateHarm)
+
+# Order the data set by the most damaging event type into a new data set, harmOrdered
+harmOrdered <- aggregateHarm[order(-aggregateHarm$sumHarm),]
+head(harmOrdered)
 ```
 
 ```
-##                  EVTYPE FATALITIES INJURIES sumHarm
-## 1    HIGH SURF ADVISORY          0        0       0
-## 2         COASTAL FLOOD          0        0       0
-## 3           FLASH FLOOD          0        0       0
-## 4             LIGHTNING          0        0       0
-## 5             TSTM WIND          0        0       0
-## 6       TSTM WIND (G45)          0        0       0
+##             EVTYPE FATALITIES INJURIES sumHarm
+## 834        TORNADO       5633    91346   96979
+## 130 EXCESSIVE HEAT       1903     6525    8428
+## 856      TSTM WIND        504     6957    7461
+## 170          FLOOD        470     6789    7259
+## 464      LIGHTNING        816     5230    6046
+## 275           HEAT        937     2100    3037
 ```
 
-
+We can see that the most damaging event type is TORNADO, which we will plot in the Results section later using the data set ```harmOrdered```.
 
 #### Q2. Across the United States, which types of events have the greatest economic consequences?
 
