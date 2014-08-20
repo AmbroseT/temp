@@ -1,3 +1,11 @@
+---
+  title: "cssTest"
+    output:
+    html_document:
+      css: custom.css
+      toc: yes
+---
+
 
 
 ## WEATHER SYSTEMS AND THEIR IMPACT ACROSS THE U.S.
@@ -5,9 +13,11 @@
 
 ## Section I: Synopsis
 
-
+Synopsis: Immediately after the title, there should be a synopsis which describes and summarizes your analysis in at most 10 complete sentences.
 
 ## Section II: Data Processing
+
+There should be a section titled Data Processing which describes (in words and code) how the data were loaded into R and processed for analysis. In particular, your analysis must start from the raw CSV file containing the data. You cannot do any preprocessing outside the document. If preprocessing is time-consuming you may consider using the cache = TRUE option for certain code chunks.
 
 The basic goal of this assignment is to explore the NOAA Storm Database and answer some 
 basic questions about severe weather events. You must use the database to answer the 
@@ -32,6 +42,9 @@ All plots created in this assignment are **ggplot2** plots, consisting of histog
 
 
 ```r
+## ----------------------
+## downloading code chunk
+## ----------------------
 ## Preparing the directory locations:
 ## check if destination directories to be used already exist, relative to
 ## the working directory
@@ -71,10 +84,13 @@ Now that we have downloaded the raw data set, we can store it into a variable na
 
 
 ```r
+## ------------------
+## reading code chunk
+## ------------------
 weatherData <- read.csv(filename, sep=",")
 ```
 
-Using inline R code, the following HTML table just states and records the ```filename``` and ```datedownloaded```, from the above code chunk:
+Using inline R code, the following HTML table just states and records the ```filename``` and ```datedownloaded```, from the downloading code chunk above:
 
 |            | File Used      | Downloaded          |
 | ----------:| --------------:| -------------------:|
@@ -188,29 +204,32 @@ summary(weatherData)
 ##  (Other)                                       :588295
 ```
 
-We can take the above summary of the variables in the data set and cross reference the information about the data set in the National Weather Service PDF file [here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf).
+We can take the above summary of the variables in the data set and cross reference the information about the variables in the National Weather Service PDF file [here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf).
 
-
-## Section III: Results
+Now that we understand the meaning behind the variables in the data set, we will move forward to answer some questions.
 
 ### Answering the Questions
 
 Your data analysis must address the following questions:
   
-- Across the United States, which types of events (as indicated in the EVTYPE variable) 
- are most harmful with respect to population health?
+#### Q1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
 
   
- -- data contains 'fatalities' and 'injuries' with regards to population health
+**A1.** data contains 'fatalities' and 'injuries' with regards to population health
   
   
   
-  
-- Across the United States, which types of events have the greatest economic consequences?
+#### Q2. Across the United States, which types of events have the greatest economic consequences?
 
   
- -- variables related to economy: propdmg, propdmgexp, cropdmg, cropdmgexp
-  
+**A2.** variables related to economy: propdmg, propdmgexp, cropdmg, cropdmgexp
+ 
+ 
+
+## Section III: Results
+
+There should be a section titled Results in which your results are presented.
+
 ### Conclusion  
   
 Consider writing your report as if it were to be read by a government or municipal manager 
@@ -218,26 +237,8 @@ Consider writing your report as if it were to be read by a government or municip
  resources for different types of events. However, there is no need to make any specific 
  recommendations in your report.
 
-  
 
  ## Document Layout
-
- Language: Your document should be written in English.
-
- Title: Your document should have a title that briefly summarizes your data analysis
-
- Synopsis: Immediately after the title, there should be a synopsis which describes and 
- summarizes your analysis in at most 10 complete sentences.
-
- There should be a section titled Data Processing which describes (in words and code) 
- how the data were loaded into R and processed for analysis. In particular, your analysis 
- must start from the raw CSV file containing the data. You cannot do any preprocessing 
- outside the document. If preprocessing is time-consuming you may consider using the 
- cache = TRUE option for certain code chunks.
-
- There should be a section titled Results in which your results are presented.
-
- You may have other sections in your analysis, but Data Processing and Results are required.
 
  The analysis document must have at least one figure containing a plot.
 

@@ -185,7 +185,11 @@ hljs.initHighlightingOnLoad();
 
 <h2>Section I: Synopsis</h2>
 
+<p>Synopsis: Immediately after the title, there should be a synopsis which describes and summarizes your analysis in at most 10 complete sentences.</p>
+
 <h2>Section II: Data Processing</h2>
+
+<p>There should be a section titled Data Processing which describes (in words and code) how the data were loaded into R and processed for analysis. In particular, your analysis must start from the raw CSV file containing the data. You cannot do any preprocessing outside the document. If preprocessing is time-consuming you may consider using the cache = TRUE option for certain code chunks.</p>
 
 <p>The basic goal of this assignment is to explore the NOAA Storm Database and answer some 
 basic questions about severe weather events. You must use the database to answer the 
@@ -206,7 +210,10 @@ library(xtable)
 
 <h3>Downloading and Reading the Data</h3>
 
-<pre><code class="r">## Preparing the directory locations:
+<pre><code class="r">## ----------------------
+## downloading code chunk
+## ----------------------
+## Preparing the directory locations:
 ## check if destination directories to be used already exist, relative to
 ## the working directory
 
@@ -243,10 +250,13 @@ if(!file.exists(&quot;StormData.csv&quot;)) {
 
 <p>Now that we have downloaded the raw data set, we can store it into a variable named <code>weatherDdata</code>:</p>
 
-<pre><code class="r">weatherData &lt;- read.csv(filename, sep=&quot;,&quot;)
+<pre><code class="r">## ------------------
+## reading code chunk
+## ------------------
+weatherData &lt;- read.csv(filename, sep=&quot;,&quot;)
 </code></pre>
 
-<p>Using inline R code, the following HTML table just states and records the <code>filename</code> and <code>datedownloaded</code>, from the above code chunk:</p>
+<p>Using inline R code, the following HTML table just states and records the <code>filename</code> and <code>datedownloaded</code>, from the downloading code chunk above:</p>
 
 <table><thead>
 <tr>
@@ -367,23 +377,25 @@ if(!file.exists(&quot;StormData.csv&quot;)) {
 ##  (Other)                                       :588295
 </code></pre>
 
-<p>We can take the above summary of the variables in the data set and cross reference the information about the data set in the National Weather Service PDF file <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">here</a>.</p>
+<p>We can take the above summary of the variables in the data set and cross reference the information about the variables in the National Weather Service PDF file <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">here</a>.</p>
 
-<h2>Section III: Results</h2>
+<p>Now that we understand the meaning behind the variables in the data set, we will move forward to answer some questions.</p>
 
 <h3>Answering the Questions</h3>
 
 <p>Your data analysis must address the following questions:</p>
 
-<ul>
-<li><p>Across the United States, which types of events (as indicated in the EVTYPE variable) 
-are most harmful with respect to population health?</p>
+<h4>Q1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?</h4>
 
-<p>&ndash; data contains &#39;fatalities&#39; and &#39;injuries&#39; with regards to population health</p></li>
-<li><p>Across the United States, which types of events have the greatest economic consequences?</p>
+<p><strong>A1.</strong> data contains &#39;fatalities&#39; and &#39;injuries&#39; with regards to population health</p>
 
-<p>&ndash; variables related to economy: propdmg, propdmgexp, cropdmg, cropdmgexp</p></li>
-</ul>
+<h4>Q2. Across the United States, which types of events have the greatest economic consequences?</h4>
+
+<p><strong>A2.</strong> variables related to economy: propdmg, propdmgexp, cropdmg, cropdmgexp</p>
+
+<h2>Section III: Results</h2>
+
+<p>There should be a section titled Results in which your results are presented.</p>
 
 <h3>Conclusion</h3>
 
@@ -393,23 +405,6 @@ are most harmful with respect to population health?</p>
  recommendations in your report.</p>
 
 <p>## Document Layout</p>
-
-<p>Language: Your document should be written in English.</p>
-
-<p>Title: Your document should have a title that briefly summarizes your data analysis</p>
-
-<p>Synopsis: Immediately after the title, there should be a synopsis which describes and 
- summarizes your analysis in at most 10 complete sentences.</p>
-
-<p>There should be a section titled Data Processing which describes (in words and code) 
- how the data were loaded into R and processed for analysis. In particular, your analysis 
- must start from the raw CSV file containing the data. You cannot do any preprocessing 
- outside the document. If preprocessing is time-consuming you may consider using the 
- cache = TRUE option for certain code chunks.</p>
-
-<p>There should be a section titled Results in which your results are presented.</p>
-
-<p>You may have other sections in your analysis, but Data Processing and Results are required.</p>
 
 <p>The analysis document must have at least one figure containing a plot.</p>
 
