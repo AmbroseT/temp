@@ -272,7 +272,7 @@ weatherData &lt;- read.csv(filename, sep=&quot;,&quot;)
 </tr>
 </tbody></table>
 
-<p>Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated date set, then the date of the new data set can be compared against the <code>datedownloaded</code> of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.</p>
+<p>Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated data set, then the date of the new data set can be compared against the <code>datedownloaded</code> of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.</p>
 
 <p>Next we will use the <code>weatherData</code> data set to run some analysis. First, let&#39;s check the summary of the data set:</p>
 
@@ -383,11 +383,47 @@ weatherData &lt;- read.csv(filename, sep=&quot;,&quot;)
 
 <h3>Answering the Questions</h3>
 
-<p>Your data analysis must address the following questions:</p>
-
 <h4>Q1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?</h4>
 
-<p><strong>A1.</strong> data contains &#39;fatalities&#39; and &#39;injuries&#39; with regards to population health</p>
+<p>We will subset from <code>weatherData</code> only the variables that apply to this question.  From the summary of <code>weatherData</code> that we saw previously, the relevant variables that we will choose are:</p>
+
+<ul>
+<li>EVTYPE</li>
+<li>FATALITIES</li>
+<li>INJURIES</li>
+</ul>
+
+<pre><code class="r">## population health
+popHarm &lt;- weatherData[, c(&quot;EVTYPE&quot;, &quot;FATALITIES&quot;, &quot;INJURIES&quot;)]
+</code></pre>
+
+<pre><code class="r">sumHarm &lt;- popHarm$FATALITIES + popHarm$INJURIES
+sumHarm &lt;- cbind(popHarm, sumHarm)
+head(sumHarm)
+</code></pre>
+
+<pre><code>##    EVTYPE FATALITIES INJURIES sumHarm
+## 1 TORNADO          0       15      15
+## 2 TORNADO          0        0       0
+## 3 TORNADO          0        2       2
+## 4 TORNADO          0        2       2
+## 5 TORNADO          0        2       2
+## 6 TORNADO          0        6       6
+</code></pre>
+
+<pre><code class="r">## aggregate population health by sum
+aggregateHarm &lt;- aggregate(. ~ EVTYPE, data = sumHarm, FUN = sum)
+head(aggregateHarm)
+</code></pre>
+
+<pre><code>##                  EVTYPE FATALITIES INJURIES sumHarm
+## 1    HIGH SURF ADVISORY          0        0       0
+## 2         COASTAL FLOOD          0        0       0
+## 3           FLASH FLOOD          0        0       0
+## 4             LIGHTNING          0        0       0
+## 5             TSTM WIND          0        0       0
+## 6       TSTM WIND (G45)          0        0       0
+</code></pre>
 
 <h4>Q2. Across the United States, which types of events have the greatest economic consequences?</h4>
 

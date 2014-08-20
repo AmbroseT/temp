@@ -1,11 +1,3 @@
----
-  title: "cssTest"
-    output:
-    html_document:
-      css: custom.css
-      toc: yes
----
-
 
 
 ## WEATHER SYSTEMS AND THEIR IMPACT ACROSS THE U.S.
@@ -96,7 +88,7 @@ Using inline R code, the following HTML table just states and records the ```fil
 | ----------:| --------------:| -------------------:|
 | **Record** | StormData.csv   | Tue Aug 19 13:30:57 2014, localCopy  |
 
-Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated date set, then the date of the new data set can be compared against the ```datedownloaded``` of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.
+Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated data set, then the date of the new data set can be compared against the ```datedownloaded``` of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.
 
 Next we will use the ```weatherData``` data set to run some analysis. First, let's check the summary of the data set:
 
@@ -209,16 +201,56 @@ We can take the above summary of the variables in the data set and cross referen
 Now that we understand the meaning behind the variables in the data set, we will move forward to answer some questions.
 
 ### Answering the Questions
-
-Your data analysis must address the following questions:
   
 #### Q1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+  
+We will subset from ```weatherData``` only the variables that apply to this question.  From the summary of ```weatherData``` that we saw previously, the relevant variables that we will choose are:
+* EVTYPE
+* FATALITIES
+* INJURIES
 
-  
-**A1.** data contains 'fatalities' and 'injuries' with regards to population health
-  
-  
-  
+
+```r
+## population health
+popHarm <- weatherData[, c("EVTYPE", "FATALITIES", "INJURIES")]
+```
+
+
+```r
+sumHarm <- popHarm$FATALITIES + popHarm$INJURIES
+sumHarm <- cbind(popHarm, sumHarm)
+head(sumHarm)
+```
+
+```
+##    EVTYPE FATALITIES INJURIES sumHarm
+## 1 TORNADO          0       15      15
+## 2 TORNADO          0        0       0
+## 3 TORNADO          0        2       2
+## 4 TORNADO          0        2       2
+## 5 TORNADO          0        2       2
+## 6 TORNADO          0        6       6
+```
+
+
+```r
+## aggregate population health by sum
+aggregateHarm <- aggregate(. ~ EVTYPE, data = sumHarm, FUN = sum)
+head(aggregateHarm)
+```
+
+```
+##                  EVTYPE FATALITIES INJURIES sumHarm
+## 1    HIGH SURF ADVISORY          0        0       0
+## 2         COASTAL FLOOD          0        0       0
+## 3           FLASH FLOOD          0        0       0
+## 4             LIGHTNING          0        0       0
+## 5             TSTM WIND          0        0       0
+## 6       TSTM WIND (G45)          0        0       0
+```
+
+
+
 #### Q2. Across the United States, which types of events have the greatest economic consequences?
 
   
