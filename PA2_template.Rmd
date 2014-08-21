@@ -293,14 +293,16 @@ ecoTotal <- cbind(ecoMerged, Total = ecoMerged$propVal + ecoMerged$cropVal)
 ecoTotal <- ecoTotal[order(-ecoTotal$Total),]
 ```
 
-```{r xtable, results='asis'}
+```{r xtable, results='asis', fig.cap="hello asdfasdfasdf"}
 ## take a look at the highest monetary loss in billions USD under each category
 xt1 <- xtable(head(propTotal))
 xt2 <- xtable(head(cropTotal))
 xt3 <- xtable(head(ecoTotal))
 
-print(xt1, include.rownames=F, type="html")
-print(xt2, include.rownames=F, type="html")
+print(xt1, include.rownames=F,  html.table.attributes = getOption("xtable.html.table.attributes",
+                                    "border=0"), type="html")
+print(xt2, include.rownames=F,  html.table.attributes = getOption("xtable.html.table.attributes",
+                                    "border=0"), type="html")
 print(xt3, include.rownames=F, html.table.attributes = getOption("xtable.html.table.attributes",
                                     "border=0"), type="html")
 ```
