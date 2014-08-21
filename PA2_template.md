@@ -598,7 +598,7 @@ print(xt1, include.rownames=F, type="html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Thu Aug 21 17:35:13 2014 -->
+<!-- Thu Aug 21 17:46:08 2014 -->
 <TABLE border=1>
 <TR> <TH> EVTYPE </TH> <TH> propVal </TH>  </TR>
   <TR> <TD> FLOOD </TD> <TD align="right"> 144.66 </TD> </TR>
@@ -614,7 +614,7 @@ print(xt2, include.rownames=F, type="html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Thu Aug 21 17:35:13 2014 -->
+<!-- Thu Aug 21 17:46:08 2014 -->
 <TABLE border=1>
 <TR> <TH> EVTYPE </TH> <TH> cropVal </TH>  </TR>
   <TR> <TD> DROUGHT </TD> <TD align="right"> 13.97 </TD> </TR>
@@ -626,12 +626,13 @@ print(xt2, include.rownames=F, type="html")
    </TABLE>
 
 ```r
-print(xt3, include.rownames=F, type="html")
+print(xt3, include.rownames=F, html.table.attributes = getOption("xtable.html.table.attributes",
+                                    "border=0"), type="html")
 ```
 
 <!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
-<!-- Thu Aug 21 17:35:13 2014 -->
-<TABLE border=1>
+<!-- Thu Aug 21 17:46:08 2014 -->
+<TABLE border=0>
 <TR> <TH> EVTYPE </TH> <TH> propVal </TH> <TH> cropVal </TH> <TH> Total </TH>  </TR>
   <TR> <TD> FLOOD </TD> <TD align="right"> 144.66 </TD> <TD align="right"> 5.66 </TD> <TD align="right"> 150.32 </TD> </TR>
   <TR> <TD> HURRICANE/TYPHOON </TD> <TD align="right"> 69.31 </TD> <TD align="right"> 2.61 </TD> <TD align="right"> 71.91 </TD> </TR>

@@ -301,7 +301,8 @@ xt3 <- xtable(head(ecoTotal))
 
 print(xt1, include.rownames=F, type="html")
 print(xt2, include.rownames=F, type="html")
-print(xt3, include.rownames=F, type="html")
+print(xt3, include.rownames=F, html.table.attributes = getOption("xtable.html.table.attributes",
+                                    "border=0"), type="html")
 ```
 
 From the new tidy data sets we created, ```cropTotal```, ```propTotal```, and ```ecoTotal```, we can see different losses under each category, sorted by the highest amount lost in billions USD.  We will use this information to create a plot in the next section.
