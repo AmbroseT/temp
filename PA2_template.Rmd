@@ -147,15 +147,9 @@ For this analysis, we will define "economic consequences" as a measurement of da
 This will be represented in R code as:
 ```{r alphaNums}
 ## The three alphabetical characters and their designation
-## force as integer instead of numeric, so R does not use
-## real number representation (i.e 1e+09)
-k <- as.integer(1000)
-m <- as.integer(1000000)
-b <- as.integer(1000000000)
-
-class(k)
-class(m)
-class(b)
+k <- 1e3
+m <- 1e6
+b <- 1e9
 ```
 
 All other designations will be ignored, since they cover other scenarios of ambiguity or exclusion.
@@ -177,7 +171,7 @@ When each respective variables are paired, the combination represents the moneta
 | 1.55    | m          |         |            | `r as.integer(1.55 * m)` |
 |         |            | 1.36    | K          | `r as.integer(1.36 * k)` |
 
-The 4 ```weatherData``` variables and the variable ```EVTYPE``` will be the relevant variables to subset from the raw data set ```weatherData```. ~~The new data set will then be aggregated by event type, and the sum total economic consequences for each event type will be calculated~~. Reviewing the summary of ```weatherDatda``` shows that the variables mentioned do not have NA values in the observations.
+We will use the above model to calculate full monetary values for property damage and crop damage, in new variables respectively, and ```cbind()``` them to a new data set, named ```kmb```.
 
 It is important to note that we will need to consider case sensitivity for ```PROPDMGEXP``` and ```CROPDMGEXP``` since both upper and lower cases have been recorded:
 
@@ -189,42 +183,124 @@ unique(weatherData$PROPDMGEXP)
 unique(weatherData$CROPDMGEXP)
 ```
 
+The 4 ```weatherData``` variables and the variable ```EVTYPE``` will be the relevant variables to subset from the raw data set ```weatherData```. Reviewing the summary of ```weatherDatda``` shows that the variables mentioned do not have NA values in the observations. a new data set ```kmb``` will be created, then aggregated by event type, and the sum total economic consequences for each event type will be calculated after the ```cbind()``` process. 
+
 ```{r kmb}
+## sprintf("$%14.2f",b)
+
 ## subset weatherData for the relevant variables relevant to economic consequences
 ecoDmg <- weatherData[, c("EVTYPE", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
 
-## extract only the observations that matches upper and lower cases of 'k', 'm', and 'b'
-kmb <- ecoDmg[c(grep("[kK]|[mM]|[bB]", ecoDmg$CROPDMGEXP), 
-                grep("[kK]|[mM]|[bB]", ecoDmg$PROPDMGEXP)), ]
+## convert from factor to character
+ecoDmg$PROPDMGEXP <- as.character(ecoDmg$PROPDMGEXP)
+ecoDmg$CROPDMGEXP <- as.character(ecoDmg$CROPDMGEXP)
+
+## divide into 2 data sets, one for property (ecoDmg.prop), and one for crops (ecoDmg.crop)
+ecoDmg.prop <- ecoDmg[, c("EVTYPE","PROPDMG","PROPDMGEXP")]
+ecoDmg.crop <- ecoDmg[, c("EVTYPE","CROPDMG","CROPDMGEXP")]
+
+## testing
+head(ecoDmg.prop)
+head(ecoDmg.crop)
+
+kmb.crop <- ecoDmg.crop[grep("[kK]|[mM]|[bB]", ecoDmg.crop$CROPDMGEXP), ]
+kmb.prop <- ecoDmg.prop[grep("[kK]|[mM]|[bB]", ecoDmg.prop$PROPDMGEXP), ]
+
+unique(kmb.crop$CROPDMGEXP)
+unique(kmb.prop$PROPDMGEXP)
+
+head(kmb.crop)
+head(kmb.prop)
+```
+
+```{r}
+## find and replace 'k', 'm', and 'b' with equivalent value for property damage
+kmb.prop$PROPDMGEXP <- sapply(kmb.prop$PROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
+kmb.prop$PROPDMGEXP <- sapply(kmb.prop$PROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
+kmb.prop$PROPDMGEXP <- sapply(kmb.prop$PROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+
+## testing
+## unique(kmb.prop$PROPDMGEXP)
+## head(kmb.prop)
+## str(kmb.prop)
+
+## find and replace 'k', 'm', and 'b' with equivalent value for crop damage
+kmb.crop$CROPDMGEXP <- sapply(kmb.crop$CROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
+kmb.crop$CROPDMGEXP <- sapply(kmb.crop$CROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
+kmb.crop$CROPDMGEXP <- sapply(kmb.crop$CROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+
+## testing
+## unique(kmb.crop$CROPDMGEXP)
+## head(kmb.crop)
+## str(kmb.crop)
+```
+
+```{r}
+## Convert to numeric
+kmb.prop$PROPDMGEXP <- as.numeric(kmb.prop$PROPDMGEXP)
+kmb.crop$CROPDMGEXP <- as.numeric(kmb.crop$CROPDMGEXP)
+```
+
+```{r}
+## Multiply and cbind
+kmb.prop <- cbind(kmb.prop, propVal = kmb.prop$PROPDMG * kmb.prop$PROPDMGEXP)
+kmb.crop <- cbind(kmb.crop, cropVal = kmb.crop$CROPDMG * kmb.crop$CROPDMGEXP)
+
+## testing, are there NA, other unwanted values
+summary(kmb.prop)
+summary(kmb.crop)
+
+unique(kmb.prop$PROPDMGEXP)
+unique(kmb.crop$CROPDMGEXP)
+
+head(kmb.prop)
+head(kmb.crop)
+str(kmb.prop)
+str(kmb.crop)
 
 ## convert from factor to character
-kmb$PROPDMGEXP <- as.character(kmb$PROPDMGEXP)
-kmb$CROPDMGEXP <- as.character(kmb$CROPDMGEXP)
+kmb.prop$EVTYPE <- as.character(kmb.prop$EVTYPE)
+kmb.crop$EVTYPE <- as.character(kmb.crop$EVTYPE)
 
-## find and replace 'k', 'm', and 'b' with equivalent numeric value for property damage
-kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
-kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
-kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+## subset just the necessary variables, 'evtype' and 'propVal'
+kmb.prop2 <- kmb.prop[,c("EVTYPE","propVal")]
 
-## find and replace 'k', 'm', and 'b' with equivalent numeric value for crop damage
-kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
-kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
-kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+## subset just the necessary variables, 'evtype' and 'cropVal'
+kmb.crop2 <- kmb.crop[,c("EVTYPE","cropVal")]
 
-head(kmb)
+## aggregate as in Q1
+aggregateProp <- aggregate(. ~ EVTYPE, data = kmb.prop2, FUN = sum)
+aggregateCrop <- aggregate(. ~ EVTYPE, data = kmb.crop2, FUN = sum)
 
-## subset selected variables from weatherData for conversion from
-## alphabetical characters to numeric
-## ecoDmg1 <- weatherData[, c("PROPDMG","PROPDMGEXP")]
-## ecoDmg2 <- weatherData[, c("CROPDMG","CROPDMGEXP")]
+## convert propVal to represent billions
+aggregateProp$propVal <- aggregateProp$propVal / 1e9 
+aggregateCrop$cropVal <- aggregateCrop$cropVal / 1e9 
 
-## kmb1 <- ecodmg1[]
+## order property data by highest damage value
+propTotal <- aggregateProp[order(-aggregateProp$propVal),]
 
-## extract only rows that contain 'k', 'm', and 'b' in both cases
-## kmb <- ecoDmg[c(grep("[kK]|[mM]|[bB]", ecoDmg$CROPDMGEXP), 
-##                 grep("[kK]|[mM]|[bB]", ecoDmg$PROPDMGEXP)), ]
+## order crop data by highest damage value
+cropTotal <- aggregateCrop[order(-aggregateCrop$cropVal),]
 
+## merge crop and property data
+ecoMerged <- merge(propTotal, cropTotal)
+
+## create a new variable that calculates the sum of crop and property damage
+## by evtype
+ecoTotal <- cbind(ecoMerged, Total = ecoMerged$propVal + ecoMerged$cropVal)
+
+## order total damage value per type by highest damage value
+ecoTotal <- ecoTotal[order(-ecoTotal$Total),]
 ```
+
+```{r}
+## take a look at the highest monetary loss in billions USD under each category
+head(propTotal)
+head(cropTotal)
+head(ecoTotal)
+```
+
+From the new tidy data sets we created, ```cropTotal```, ```propTotal```, and ```ecoTotal```, we can see different losses under each category, sorted by the highest amount lost in billions USD.  We will use this information to create a plot in the Results section later.
 
 ## Section III: Results
 

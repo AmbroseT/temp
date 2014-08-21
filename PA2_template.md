@@ -260,33 +260,9 @@ This will be represented in R code as:
 
 ```r
 ## The three alphabetical characters and their designation
-## force as integer instead of numeric, so R does not use
-## real number representation (i.e 1e+09)
-k <- as.integer(1000)
-m <- as.integer(1000000)
-b <- as.integer(1000000000)
-
-class(k)
-```
-
-```
-## [1] "integer"
-```
-
-```r
-class(m)
-```
-
-```
-## [1] "integer"
-```
-
-```r
-class(b)
-```
-
-```
-## [1] "integer"
+k <- 1e3
+m <- 1e6
+b <- 1e9
 ```
 
 All other designations will be ignored, since they cover other scenarios of ambiguity or exclusion.
@@ -308,7 +284,7 @@ When each respective variables are paired, the combination represents the moneta
 | 1.55    | m          |         |            | 1550000 |
 |         |            | 1.36    | K          | 1360 |
 
-The 4 ```weatherData``` variables and the variable ```EVTYPE``` will be the relevant variables to subset from the raw data set ```weatherData```. ~~The new data set will then be aggregated by event type, and the sum total economic consequences for each event type will be calculated~~. Reviewing the summary of ```weatherDatda``` shows that the variables mentioned do not have NA values in the observations.
+We will use the above model to calculate full monetary values for property damage and crop damage, in new variables respectively, and ```cbind()``` them to a new data set, named ```kmb```.
 
 It is important to note that we will need to consider case sensitivity for ```PROPDMGEXP``` and ```CROPDMGEXP``` since both upper and lower cases have been recorded:
 
@@ -333,54 +309,329 @@ unique(weatherData$CROPDMGEXP)
 ## Levels:  ? 0 2 B k K m M
 ```
 
+The 4 ```weatherData``` variables and the variable ```EVTYPE``` will be the relevant variables to subset from the raw data set ```weatherData```. Reviewing the summary of ```weatherDatda``` shows that the variables mentioned do not have NA values in the observations. a new data set ```kmb``` will be created, then aggregated by event type, and the sum total economic consequences for each event type will be calculated after the ```cbind()``` process. 
+
 
 ```r
+## sprintf("$%14.2f",b)
+
 ## subset weatherData for the relevant variables relevant to economic consequences
 ecoDmg <- weatherData[, c("EVTYPE", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
 
-## extract only the observations that matches upper and lower cases of 'k', 'm', and 'b'
-kmb <- ecoDmg[c(grep("[kK]|[mM]|[bB]", ecoDmg$CROPDMGEXP), 
-                grep("[kK]|[mM]|[bB]", ecoDmg$PROPDMGEXP)), ]
-
 ## convert from factor to character
-kmb$PROPDMGEXP <- as.character(kmb$PROPDMGEXP)
-kmb$CROPDMGEXP <- as.character(kmb$CROPDMGEXP)
+ecoDmg$PROPDMGEXP <- as.character(ecoDmg$PROPDMGEXP)
+ecoDmg$CROPDMGEXP <- as.character(ecoDmg$CROPDMGEXP)
 
-## find and replace 'k', 'm', and 'b' with equivalent numeric value for property damage
-kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
-kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
-kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+## divide into 2 data sets, one for property (ecoDmg.prop), and one for crops (ecoDmg.crop)
+ecoDmg.prop <- ecoDmg[, c("EVTYPE","PROPDMG","PROPDMGEXP")]
+ecoDmg.crop <- ecoDmg[, c("EVTYPE","CROPDMG","CROPDMGEXP")]
 
-## find and replace 'k', 'm', and 'b' with equivalent numeric value for crop damage
-kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
-kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
-kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
-
-head(kmb)
+## testing
+head(ecoDmg.prop)
 ```
 
 ```
-##                           EVTYPE PROPDMG PROPDMGEXP CROPDMG CROPDMGEXP
-## 187566 HURRICANE OPAL/HIGH WINDS     0.1 1000000000      10    1000000
-## 187571        THUNDERSTORM WINDS     5.0    1000000     500       1000
-## 187581            HURRICANE ERIN    25.0    1000000       1    1000000
-## 187583            HURRICANE OPAL    48.0    1000000       4    1000000
-## 187584            HURRICANE OPAL    20.0    1000000      10    1000000
-## 187653        THUNDERSTORM WINDS    50.0       1000      50       1000
+##    EVTYPE PROPDMG PROPDMGEXP
+## 1 TORNADO    25.0          K
+## 2 TORNADO     2.5          K
+## 3 TORNADO    25.0          K
+## 4 TORNADO     2.5          K
+## 5 TORNADO     2.5          K
+## 6 TORNADO     2.5          K
 ```
 
 ```r
-## subset selected variables from weatherData for conversion from
-## alphabetical characters to numeric
-## ecoDmg1 <- weatherData[, c("PROPDMG","PROPDMGEXP")]
-## ecoDmg2 <- weatherData[, c("CROPDMG","CROPDMGEXP")]
-
-## kmb1 <- ecodmg1[]
-
-## extract only rows that contain 'k', 'm', and 'b' in both cases
-## kmb <- ecoDmg[c(grep("[kK]|[mM]|[bB]", ecoDmg$CROPDMGEXP), 
-##                 grep("[kK]|[mM]|[bB]", ecoDmg$PROPDMGEXP)), ]
+head(ecoDmg.crop)
 ```
+
+```
+##    EVTYPE CROPDMG CROPDMGEXP
+## 1 TORNADO       0           
+## 2 TORNADO       0           
+## 3 TORNADO       0           
+## 4 TORNADO       0           
+## 5 TORNADO       0           
+## 6 TORNADO       0
+```
+
+```r
+kmb.crop <- ecoDmg.crop[grep("[kK]|[mM]|[bB]", ecoDmg.crop$CROPDMGEXP), ]
+kmb.prop <- ecoDmg.prop[grep("[kK]|[mM]|[bB]", ecoDmg.prop$PROPDMGEXP), ]
+
+unique(kmb.crop$CROPDMGEXP)
+```
+
+```
+## [1] "M" "K" "m" "B" "k"
+```
+
+```r
+unique(kmb.prop$PROPDMGEXP)
+```
+
+```
+## [1] "K" "M" "B" "m"
+```
+
+```r
+head(kmb.crop)
+```
+
+```
+##                           EVTYPE CROPDMG CROPDMGEXP
+## 187566 HURRICANE OPAL/HIGH WINDS      10          M
+## 187571        THUNDERSTORM WINDS     500          K
+## 187581            HURRICANE ERIN       1          M
+## 187583            HURRICANE OPAL       4          M
+## 187584            HURRICANE OPAL      10          m
+## 187653        THUNDERSTORM WINDS      50          K
+```
+
+```r
+head(kmb.prop)
+```
+
+```
+##    EVTYPE PROPDMG PROPDMGEXP
+## 1 TORNADO    25.0          K
+## 2 TORNADO     2.5          K
+## 3 TORNADO    25.0          K
+## 4 TORNADO     2.5          K
+## 5 TORNADO     2.5          K
+## 6 TORNADO     2.5          K
+```
+
+
+```r
+## find and replace 'k', 'm', and 'b' with equivalent value for property damage
+kmb.prop$PROPDMGEXP <- sapply(kmb.prop$PROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
+kmb.prop$PROPDMGEXP <- sapply(kmb.prop$PROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
+kmb.prop$PROPDMGEXP <- sapply(kmb.prop$PROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+
+## testing
+## unique(kmb.prop$PROPDMGEXP)
+## head(kmb.prop)
+## str(kmb.prop)
+
+## find and replace 'k', 'm', and 'b' with equivalent value for crop damage
+kmb.crop$CROPDMGEXP <- sapply(kmb.crop$CROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
+kmb.crop$CROPDMGEXP <- sapply(kmb.crop$CROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
+kmb.crop$CROPDMGEXP <- sapply(kmb.crop$CROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+
+## testing
+## unique(kmb.crop$CROPDMGEXP)
+## head(kmb.crop)
+## str(kmb.crop)
+```
+
+
+```r
+## Convert to numeric
+kmb.prop$PROPDMGEXP <- as.numeric(kmb.prop$PROPDMGEXP)
+kmb.crop$CROPDMGEXP <- as.numeric(kmb.crop$CROPDMGEXP)
+```
+
+
+```r
+## Multiply and cbind
+kmb.prop <- cbind(kmb.prop, propVal = kmb.prop$PROPDMG * kmb.prop$PROPDMGEXP)
+kmb.crop <- cbind(kmb.crop, cropVal = kmb.crop$CROPDMG * kmb.crop$CROPDMGEXP)
+
+## testing, are there NA, other unwanted values
+summary(kmb.prop)
+```
+
+```
+##                EVTYPE         PROPDMG       PROPDMGEXP      
+##  HAIL             :91966   Min.   :   0   Min.   :1.00e+03  
+##  THUNDERSTORM WIND:81941   1st Qu.:   0   1st Qu.:1.00e+03  
+##  TSTM WIND        :62844   Median :   1   Median :1.00e+03  
+##  TORNADO          :51827   Mean   :  25   Mean   :1.19e+05  
+##  FLASH FLOOD      :32942   3rd Qu.:  10   3rd Qu.:1.00e+03  
+##  FLOOD            :17394   Max.   :5000   Max.   :1.00e+09  
+##  (Other)          :97128                                    
+##     propVal        
+##  Min.   :0.00e+00  
+##  1st Qu.:0.00e+00  
+##  Median :1.00e+03  
+##  Mean   :9.80e+05  
+##  3rd Qu.:1.00e+04  
+##  Max.   :1.15e+11  
+## 
+```
+
+```r
+summary(kmb.crop)
+```
+
+```
+##                EVTYPE         CROPDMG        CROPDMGEXP      
+##  HAIL             :82305   Min.   :  0.0   Min.   :1.00e+03  
+##  THUNDERSTORM WIND:81425   1st Qu.:  0.0   1st Qu.:1.00e+03  
+##  FLASH FLOOD      :21679   Median :  0.0   Median :1.00e+03  
+##  FLOOD            :13622   Mean   :  4.9   Mean   :3.97e+04  
+##  HIGH WIND        :11501   3rd Qu.:  0.0   3rd Qu.:1.00e+03  
+##  TORNADO          : 9593   Max.   :990.0   Max.   :1.00e+09  
+##  (Other)          :63732                                     
+##     cropVal        
+##  Min.   :0.00e+00  
+##  1st Qu.:0.00e+00  
+##  Median :0.00e+00  
+##  Mean   :1.73e+05  
+##  3rd Qu.:0.00e+00  
+##  Max.   :5.00e+09  
+## 
+```
+
+```r
+unique(kmb.prop$PROPDMGEXP)
+```
+
+```
+## [1] 1e+03 1e+06 1e+09
+```
+
+```r
+unique(kmb.crop$CROPDMGEXP)
+```
+
+```
+## [1] 1e+06 1e+03 1e+09
+```
+
+```r
+head(kmb.prop)
+```
+
+```
+##    EVTYPE PROPDMG PROPDMGEXP propVal
+## 1 TORNADO    25.0       1000   25000
+## 2 TORNADO     2.5       1000    2500
+## 3 TORNADO    25.0       1000   25000
+## 4 TORNADO     2.5       1000    2500
+## 5 TORNADO     2.5       1000    2500
+## 6 TORNADO     2.5       1000    2500
+```
+
+```r
+head(kmb.crop)
+```
+
+```
+##                           EVTYPE CROPDMG CROPDMGEXP cropVal
+## 187566 HURRICANE OPAL/HIGH WINDS      10      1e+06   1e+07
+## 187571        THUNDERSTORM WINDS     500      1e+03   5e+05
+## 187581            HURRICANE ERIN       1      1e+06   1e+06
+## 187583            HURRICANE OPAL       4      1e+06   4e+06
+## 187584            HURRICANE OPAL      10      1e+06   1e+07
+## 187653        THUNDERSTORM WINDS      50      1e+03   5e+04
+```
+
+```r
+str(kmb.prop)
+```
+
+```
+## 'data.frame':	436042 obs. of  4 variables:
+##  $ EVTYPE    : Factor w/ 985 levels "   HIGH SURF ADVISORY",..: 834 834 834 834 834 834 834 834 834 834 ...
+##  $ PROPDMG   : num  25 2.5 25 2.5 2.5 2.5 2.5 2.5 25 25 ...
+##  $ PROPDMGEXP: num  1000 1000 1000 1000 1000 1000 1000 1000 1000 1000 ...
+##  $ propVal   : num  25000 2500 25000 2500 2500 2500 2500 2500 25000 25000 ...
+```
+
+```r
+str(kmb.crop)
+```
+
+```
+## 'data.frame':	283857 obs. of  4 variables:
+##  $ EVTYPE    : Factor w/ 985 levels "   HIGH SURF ADVISORY",..: 410 786 406 409 409 786 786 834 834 812 ...
+##  $ CROPDMG   : num  10 500 1 4 10 50 50 5 50 15 ...
+##  $ CROPDMGEXP: num  1e+06 1e+03 1e+06 1e+06 1e+06 1e+03 1e+03 1e+03 1e+03 1e+03 ...
+##  $ cropVal   : num  1.0e+07 5.0e+05 1.0e+06 4.0e+06 1.0e+07 5.0e+04 5.0e+04 5.0e+03 5.0e+04 1.5e+04 ...
+```
+
+```r
+## convert from factor to character
+kmb.prop$EVTYPE <- as.character(kmb.prop$EVTYPE)
+kmb.crop$EVTYPE <- as.character(kmb.crop$EVTYPE)
+
+## subset just the necessary variables, 'evtype' and 'propVal'
+kmb.prop2 <- kmb.prop[,c("EVTYPE","propVal")]
+
+## subset just the necessary variables, 'evtype' and 'cropVal'
+kmb.crop2 <- kmb.crop[,c("EVTYPE","cropVal")]
+
+## aggregate as in Q1
+aggregateProp <- aggregate(. ~ EVTYPE, data = kmb.prop2, FUN = sum)
+aggregateCrop <- aggregate(. ~ EVTYPE, data = kmb.crop2, FUN = sum)
+
+## convert propVal to represent billions
+aggregateProp$propVal <- aggregateProp$propVal / 1e9 
+aggregateCrop$cropVal <- aggregateCrop$cropVal / 1e9 
+
+## order property data by highest damage value
+propTotal <- aggregateProp[order(-aggregateProp$propVal),]
+
+## order crop data by highest damage value
+cropTotal <- aggregateCrop[order(-aggregateCrop$cropVal),]
+
+## merge crop and property data
+ecoMerged <- merge(propTotal, cropTotal)
+
+## create a new variable that calculates the sum of crop and property damage
+## by evtype
+ecoTotal <- cbind(ecoMerged, Total = ecoMerged$propVal + ecoMerged$cropVal)
+
+## order total damage value per type by highest damage value
+ecoTotal <- ecoTotal[order(-ecoTotal$Total),]
+```
+
+
+```r
+## take a look at the highest monetary loss in billions USD under each category
+head(propTotal)
+```
+
+```
+##                EVTYPE propVal
+## 62              FLOOD  144.66
+## 178 HURRICANE/TYPHOON   69.31
+## 331           TORNADO   56.94
+## 280       STORM SURGE   43.32
+## 50        FLASH FLOOD   16.14
+## 103              HAIL   15.73
+```
+
+```r
+head(cropTotal)
+```
+
+```
+##         EVTYPE cropVal
+## 16     DROUGHT  13.973
+## 34       FLOOD   5.662
+## 97 RIVER FLOOD   5.029
+## 84   ICE STORM   5.022
+## 52        HAIL   3.026
+## 76   HURRICANE   2.742
+```
+
+```r
+head(ecoTotal)
+```
+
+```
+##                EVTYPE propVal  cropVal  Total
+## 26              FLOOD  144.66 5.661968 150.32
+## 66  HURRICANE/TYPHOON   69.31 2.607873  71.91
+## 108           TORNADO   56.94 0.414953  57.35
+## 91        STORM SURGE   43.32 0.000005  43.32
+## 42               HAIL   15.73 3.025954  18.76
+## 22        FLASH FLOOD   16.14 1.421317  17.56
+```
+
+From the new tidy data sets we created, ```cropTotal```, ```propTotal```, and ```ecoTotal```, we can see different losses under each category, sorted by the highest amount lost in billions USD.  We will use this information to create a plot in the Results section later.
 
 ## Section III: Results
 
