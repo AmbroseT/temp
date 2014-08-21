@@ -32,6 +32,8 @@ All plots created in this assignment are **ggplot2** plots, consisting of histog
 
 ### Downloading and Reading the Data
 
+The following code details the directory creation, download of the raw data set, and reading in that raw data set. The directory structure, that this analysis was run, was separated to store some data into a directory off of the working directory for local reasons (i.e. separating assignments, projects, etc). The ```dataDir``` was created to add some flexibility here, for local changes or to accomodate other systems that are organized differently.
+
 
 ```r
 ## ----------------------
@@ -77,7 +79,7 @@ if(!file.exists(paste(dataDir, filename, sep=""))) {
 }
 ```
 
-Now that we have downloaded the raw data set, we can store it into a variable named ```weatherData```:
+Now that we have downloaded the raw data set, we can store it into a data frame named ```weatherData```:
 
 
 ```r
@@ -87,15 +89,15 @@ Now that we have downloaded the raw data set, we can store it into a variable na
 weatherData <- read.csv(filename, sep=",")
 ```
 
-Using inline R code, the following HTML table just states and records the ```filename``` and ```datedownloaded``` from the downloading code chunk above:
+Using inline R code, the following HTML table just states and records ```filename``` and ```datedownloaded``` from the downloading code chunk above:
 
 |            | File Used      | Downloaded                         |
 | ----------:| --------------:| ----------------------------------:|
 | **Record** | StormData.csv   | Wed Aug 20 14:19:13 2014, localCopy                 |
 
-Recording this information will help in determining accuracy of the analysis if the data should change in the future. If there is an updated data set at the source site, then the date of the new data set can be compared against the ```datedownloaded``` of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.
+Recording this information will help in determining accuracy of the analysis if the data source should change in the future. If there is an updated data set at the source site, then the date of the new data set can be compared against ```datedownloaded``` of this analysis.  Adjustments can then be made to the analysis code to reflect the change, or margins of error can be calculated based on the differences.
 
-Next we will use the ```weatherData``` data set to run some analysis. First, let's check the summary of the data set:
+Next we will use the ```weatherData``` data set and run some analysis against it. First, let's check the summary of the data set:
 
 
 ```r
@@ -201,7 +203,7 @@ summary(weatherData)
 ##  (Other)                                       :588295
 ```
 
-We can take the varaibles from the above summary of the data set and cross reference the information about the variables in the National Weather Service PDF file [here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf). Peruse the PDF file to understand the variables listed in the raw data set.
+We can take the variables from the above summary of the data set and cross reference the information about the data in the National Weather Service PDF file [here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf). Take a moment to peruse the PDF file to understand the variables listed in the raw data set.
 
 Now that we understand the meaning behind the variables in the data set, we will move forward to answer some questions.
 
@@ -209,12 +211,13 @@ Now that we understand the meaning behind the variables in the data set, we will
   
 #### Q1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
   
-For this analysis, we will define "harm" as a combination of "fatalities" and "injuries" from the data set. Therefore, we will subset from ```weatherData``` only the variables that apply to this question.  From the summary of ```weatherData``` that we saw previously, the relevant variables that we will choose are:
+For this analysis, we will define "harm" as a combination of both "fatalities" and "injuries" from the data set. Therefore, we will subset from ```weatherData``` only the variables that apply to this question.  From the summary of ```weatherData``` that we saw previously, the relevant variables that we have chosen are:
+
 * EVTYPE
 * FATALITIES
 * INJURIES
 
-We can subset ```weatherData``` with the variables listed above, aggregate the event types and calculate the sum of the total harm done by each type, and then order the event type by the most damage done:
+We saw from the summary of ```weatherData``` that the above listed variables do not have NA's in their observations, so we can now subset ```weatherData``` with the variables listed above, aggregate the event types and calculate the sum of the total harm done by each type, and then order the event type by the most damage done:
 
 
 ```r
@@ -225,7 +228,7 @@ popHarm <- weatherData[, c("EVTYPE", "FATALITIES", "INJURIES")]
 sumHarm <- popHarm$FATALITIES + popHarm$INJURIES
 sumHarm <- cbind(popHarm, sumHarm)
 
-## aggregate population health by sum into a new data set, aggregateHarm
+## aggregate population harm by sum into a new data set, aggregateHarm
 aggregateHarm <- aggregate(. ~ EVTYPE, data = sumHarm, FUN = sum)
 
 # Order the data set by the most damaging event type into a new data set, harmOrdered
@@ -243,18 +246,149 @@ head(harmOrdered)
 ## 275           HEAT        937     2100    3037
 ```
 
-We can see that the most damaging event type is TORNADO, which we will plot in the Results section later using the data set ```harmOrdered```.
+We can see that the most damaging event type is TORNADO, which we will plot in the Results section later using the tidy data set ```harmOrdered```.
 
 #### Q2. Across the United States, which types of events have the greatest economic consequences?
 
-  
-**A2.** variables related to economy: propdmg, propdmgexp, cropdmg, cropdmgexp
- 
- 
+For this analysis, we will define "economic consequences" as a measurement of damages to property and crops in monetary value of U.S. dollars. According to page 12, section 2.7 of the National Weather Service PDF [file](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf), monetary values are estimates rounded to three significant digits, followed by an alphabetical character signifying the numerical magnitude. The three alphabetical characters and their designation are as follows:
+
+- **K** - for thousands
+- **M** - for millions
+- **B** - for billions
+
+This will be represented in R code as:
+
+```r
+## The three alphabetical characters and their designation
+## force as integer instead of numeric, so R does not use
+## real number representation (i.e 1e+09)
+k <- as.integer(1000)
+m <- as.integer(1000000)
+b <- as.integer(1000000000)
+
+class(k)
+```
+
+```
+## [1] "integer"
+```
+
+```r
+class(m)
+```
+
+```
+## [1] "integer"
+```
+
+```r
+class(b)
+```
+
+```
+## [1] "integer"
+```
+
+All other designations will be ignored, since they cover other scenarios of ambiguity or exclusion.
+
+From the raw data set ```weatherData```, the numerical estimates are stored in the following variables:
+
+- PROPDMG
+- CROPDMG
+
+And as follows, the alphabetical characters are stored in the following variables variables (corresponding to ```PROPDMG``` and ```CROPDMG```):
+
+- PROPDMGEXP
+- CROPDMGEXP
+
+When each respective variables are paired, the combination represents the monetary value in USD. Example, using inline R code:
+
+| PROPDMG | PROPDMGEXP | CROPDMG | CROPDMGEXP | VALUE IN USD             |
+| -------:| ----------:| -------:| ----------:| ------------------------:|
+| 1.55    | m          |         |            | 1550000 |
+|         |            | 1.36    | K          | 1360 |
+
+The 4 ```weatherData``` variables and the variable ```EVTYPE``` will be the relevant variables to subset from the raw data set ```weatherData```. ~~The new data set will then be aggregated by event type, and the sum total economic consequences for each event type will be calculated~~. Reviewing the summary of ```weatherDatda``` shows that the variables mentioned do not have NA values in the observations.
+
+It is important to note that we will need to consider case sensitivity for ```PROPDMGEXP``` and ```CROPDMGEXP``` since both upper and lower cases have been recorded:
+
+
+```r
+## list the alphabetical characters used for property damage
+unique(weatherData$PROPDMGEXP)
+```
+
+```
+##  [1] K M   B m + 0 5 6 ? 4 2 3 h 7 H - 1 8
+## Levels:  - ? + 0 1 2 3 4 5 6 7 8 B h H K m M
+```
+
+```r
+## list the alphabetical characters used for crop damage
+unique(weatherData$CROPDMGEXP)
+```
+
+```
+## [1]   M K m B ? 0 k 2
+## Levels:  ? 0 2 B k K m M
+```
+
+
+```r
+## subset weatherData for the relevant variables relevant to economic consequences
+ecoDmg <- weatherData[, c("EVTYPE", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
+
+## extract only the observations that matches upper and lower cases of 'k', 'm', and 'b'
+kmb <- ecoDmg[c(grep("[kK]|[mM]|[bB]", ecoDmg$CROPDMGEXP), 
+                grep("[kK]|[mM]|[bB]", ecoDmg$PROPDMGEXP)), ]
+
+## convert from factor to character
+kmb$PROPDMGEXP <- as.character(kmb$PROPDMGEXP)
+kmb$CROPDMGEXP <- as.character(kmb$CROPDMGEXP)
+
+## find and replace 'k', 'm', and 'b' with equivalent numeric value for property damage
+kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
+kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
+kmb$PROPDMGEXP <- sapply(kmb$PROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+
+## find and replace 'k', 'm', and 'b' with equivalent numeric value for crop damage
+kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="k" | i=="K", k, i))
+kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="m" | i=="M", m, i))
+kmb$CROPDMGEXP <- sapply(kmb$CROPDMGEXP, function(i) ifelse(i=="b" | i=="B", b, i))
+
+head(kmb)
+```
+
+```
+##                           EVTYPE PROPDMG PROPDMGEXP CROPDMG CROPDMGEXP
+## 187566 HURRICANE OPAL/HIGH WINDS     0.1 1000000000      10    1000000
+## 187571        THUNDERSTORM WINDS     5.0    1000000     500       1000
+## 187581            HURRICANE ERIN    25.0    1000000       1    1000000
+## 187583            HURRICANE OPAL    48.0    1000000       4    1000000
+## 187584            HURRICANE OPAL    20.0    1000000      10    1000000
+## 187653        THUNDERSTORM WINDS    50.0       1000      50       1000
+```
+
+```r
+## subset selected variables from weatherData for conversion from
+## alphabetical characters to numeric
+## ecoDmg1 <- weatherData[, c("PROPDMG","PROPDMGEXP")]
+## ecoDmg2 <- weatherData[, c("CROPDMG","CROPDMGEXP")]
+
+## kmb1 <- ecodmg1[]
+
+## extract only rows that contain 'k', 'm', and 'b' in both cases
+## kmb <- ecoDmg[c(grep("[kK]|[mM]|[bB]", ecoDmg$CROPDMGEXP), 
+##                 grep("[kK]|[mM]|[bB]", ecoDmg$PROPDMGEXP)), ]
+```
 
 ## Section III: Results
 
-There should be a section titled Results in which your results are presented.
+We will now revisit the questions asked in Section II, and plot the results for the answers.
+
+#### Q1. Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+
+#### Q2. Across the United States, which types of events have the greatest economic consequences?
 
 ### Conclusion  
   
@@ -275,7 +409,7 @@ Consider writing your report as if it were to be read by a government or municip
  a bit verbose, but that is okay. In general, you should ensure that echo = TRUE for every code 
  chunk (this is the default setting in knitr).
 
- Publishing Your Analysis
+ ## Publishing Your Analysis
 
  For this assignment you will need to publish your analysis on RPubs.com. If you do not 
  already have an account, then you will have to create a new account. After you have completed 
