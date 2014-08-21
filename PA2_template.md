@@ -566,7 +566,7 @@ kmb.crop2 <- kmb.crop[,c("EVTYPE","cropVal")]
 aggregateProp <- aggregate(. ~ EVTYPE, data = kmb.prop2, FUN = sum)
 aggregateCrop <- aggregate(. ~ EVTYPE, data = kmb.crop2, FUN = sum)
 
-## convert propVal to represent billions
+## convert 'propVal' and 'cropVal' to represent billions in USD
 aggregateProp$propVal <- aggregateProp$propVal / 1e9 
 aggregateCrop$cropVal <- aggregateCrop$cropVal / 1e9 
 
@@ -590,48 +590,58 @@ ecoTotal <- ecoTotal[order(-ecoTotal$Total),]
 
 ```r
 ## take a look at the highest monetary loss in billions USD under each category
-head(propTotal)
+xt1 <- xtable(head(propTotal))
+xt2 <- xtable(head(cropTotal))
+xt3 <- xtable(head(ecoTotal))
+
+print(xt1, include.rownames=F, type="html")
 ```
 
-```
-##                EVTYPE propVal
-## 62              FLOOD  144.66
-## 178 HURRICANE/TYPHOON   69.31
-## 331           TORNADO   56.94
-## 280       STORM SURGE   43.32
-## 50        FLASH FLOOD   16.14
-## 103              HAIL   15.73
-```
-
-```r
-head(cropTotal)
-```
-
-```
-##         EVTYPE cropVal
-## 16     DROUGHT  13.973
-## 34       FLOOD   5.662
-## 97 RIVER FLOOD   5.029
-## 84   ICE STORM   5.022
-## 52        HAIL   3.026
-## 76   HURRICANE   2.742
-```
+<!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
+<!-- Thu Aug 21 17:35:13 2014 -->
+<TABLE border=1>
+<TR> <TH> EVTYPE </TH> <TH> propVal </TH>  </TR>
+  <TR> <TD> FLOOD </TD> <TD align="right"> 144.66 </TD> </TR>
+  <TR> <TD> HURRICANE/TYPHOON </TD> <TD align="right"> 69.31 </TD> </TR>
+  <TR> <TD> TORNADO </TD> <TD align="right"> 56.94 </TD> </TR>
+  <TR> <TD> STORM SURGE </TD> <TD align="right"> 43.32 </TD> </TR>
+  <TR> <TD> FLASH FLOOD </TD> <TD align="right"> 16.14 </TD> </TR>
+  <TR> <TD> HAIL </TD> <TD align="right"> 15.73 </TD> </TR>
+   </TABLE>
 
 ```r
-head(ecoTotal)
+print(xt2, include.rownames=F, type="html")
 ```
 
-```
-##                EVTYPE propVal  cropVal  Total
-## 26              FLOOD  144.66 5.661968 150.32
-## 66  HURRICANE/TYPHOON   69.31 2.607873  71.91
-## 108           TORNADO   56.94 0.414953  57.35
-## 91        STORM SURGE   43.32 0.000005  43.32
-## 42               HAIL   15.73 3.025954  18.76
-## 22        FLASH FLOOD   16.14 1.421317  17.56
+<!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
+<!-- Thu Aug 21 17:35:13 2014 -->
+<TABLE border=1>
+<TR> <TH> EVTYPE </TH> <TH> cropVal </TH>  </TR>
+  <TR> <TD> DROUGHT </TD> <TD align="right"> 13.97 </TD> </TR>
+  <TR> <TD> FLOOD </TD> <TD align="right"> 5.66 </TD> </TR>
+  <TR> <TD> RIVER FLOOD </TD> <TD align="right"> 5.03 </TD> </TR>
+  <TR> <TD> ICE STORM </TD> <TD align="right"> 5.02 </TD> </TR>
+  <TR> <TD> HAIL </TD> <TD align="right"> 3.03 </TD> </TR>
+  <TR> <TD> HURRICANE </TD> <TD align="right"> 2.74 </TD> </TR>
+   </TABLE>
+
+```r
+print(xt3, include.rownames=F, type="html")
 ```
 
-From the new tidy data sets we created, ```cropTotal```, ```propTotal```, and ```ecoTotal```, we can see different losses under each category, sorted by the highest amount lost in billions USD.  We will use this information to create a plot in the Results section later.
+<!-- html table generated in R 3.1.1 by xtable 1.7-3 package -->
+<!-- Thu Aug 21 17:35:13 2014 -->
+<TABLE border=1>
+<TR> <TH> EVTYPE </TH> <TH> propVal </TH> <TH> cropVal </TH> <TH> Total </TH>  </TR>
+  <TR> <TD> FLOOD </TD> <TD align="right"> 144.66 </TD> <TD align="right"> 5.66 </TD> <TD align="right"> 150.32 </TD> </TR>
+  <TR> <TD> HURRICANE/TYPHOON </TD> <TD align="right"> 69.31 </TD> <TD align="right"> 2.61 </TD> <TD align="right"> 71.91 </TD> </TR>
+  <TR> <TD> TORNADO </TD> <TD align="right"> 56.94 </TD> <TD align="right"> 0.41 </TD> <TD align="right"> 57.35 </TD> </TR>
+  <TR> <TD> STORM SURGE </TD> <TD align="right"> 43.32 </TD> <TD align="right"> 0.00 </TD> <TD align="right"> 43.32 </TD> </TR>
+  <TR> <TD> HAIL </TD> <TD align="right"> 15.73 </TD> <TD align="right"> 3.03 </TD> <TD align="right"> 18.76 </TD> </TR>
+  <TR> <TD> FLASH FLOOD </TD> <TD align="right"> 16.14 </TD> <TD align="right"> 1.42 </TD> <TD align="right"> 17.56 </TD> </TR>
+   </TABLE>
+
+From the new tidy data sets we created, ```cropTotal```, ```propTotal```, and ```ecoTotal```, we can see different losses under each category, sorted by the highest amount lost in billions USD.  We will use this information to create a plot in the next section.
 
 ## Section III: Results
 

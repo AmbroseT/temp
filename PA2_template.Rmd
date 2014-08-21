@@ -272,7 +272,7 @@ kmb.crop2 <- kmb.crop[,c("EVTYPE","cropVal")]
 aggregateProp <- aggregate(. ~ EVTYPE, data = kmb.prop2, FUN = sum)
 aggregateCrop <- aggregate(. ~ EVTYPE, data = kmb.crop2, FUN = sum)
 
-## convert propVal to represent billions
+## convert 'propVal' and 'cropVal' to represent billions in USD
 aggregateProp$propVal <- aggregateProp$propVal / 1e9 
 aggregateCrop$cropVal <- aggregateCrop$cropVal / 1e9 
 
@@ -293,14 +293,18 @@ ecoTotal <- cbind(ecoMerged, Total = ecoMerged$propVal + ecoMerged$cropVal)
 ecoTotal <- ecoTotal[order(-ecoTotal$Total),]
 ```
 
-```{r}
+```{r xtable, results='asis'}
 ## take a look at the highest monetary loss in billions USD under each category
-head(propTotal)
-head(cropTotal)
-head(ecoTotal)
+xt1 <- xtable(head(propTotal))
+xt2 <- xtable(head(cropTotal))
+xt3 <- xtable(head(ecoTotal))
+
+print(xt1, include.rownames=F, type="html")
+print(xt2, include.rownames=F, type="html")
+print(xt3, include.rownames=F, type="html")
 ```
 
-From the new tidy data sets we created, ```cropTotal```, ```propTotal```, and ```ecoTotal```, we can see different losses under each category, sorted by the highest amount lost in billions USD.  We will use this information to create a plot in the Results section later.
+From the new tidy data sets we created, ```cropTotal```, ```propTotal```, and ```ecoTotal```, we can see different losses under each category, sorted by the highest amount lost in billions USD.  We will use this information to create a plot in the next section.
 
 ## Section III: Results
 
